@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from project.tickets.models import Ticket
 from rest_framework import viewsets
-from project.tickets.serializers import UserSerializer, TicketSerializer
+from project.tickets.serializers import CreateUserSerializer, UserSerializer, TicketSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -10,6 +10,23 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+
+        if self.request.method == 'POST':
+            serializer_class = CreateUserSerializer
+
+        return serializer_class
+
+    # def get_permissions(self):
+    #     if self.request.method == 'DELETE':
+    #         return [IsAdminUser()]
+    #     elif self.request.method == 'POST':
+    #         return [AllowAny()]
+    #     else:
+    #         return [IsStaffOrTargetUser()]
+
 
 class TicketViewSet(viewsets.ModelViewSet):
     """
