@@ -2,11 +2,12 @@ from datetime import datetime
 
 from django.contrib.auth.models import User
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
 from project.tickets.models import Ticket
+from project.tickets.permissions import IsReporter, IsReporterOrAssignee, IsSameUser
 from project.tickets.serializers import CreateUserSerializer, UserSerializer, TicketSerializer, CreateTicketSerializer
 
 
@@ -20,18 +21,19 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer_class = self.serializer_class
 
-        if self.request.method in ['POST', 'PUT']:
+        if self.request.method in permissions.SAFE_METHODS:
             serializer_class = CreateUserSerializer
 
         return serializer_class
 
-    # def get_permissions(self):
-    #     if self.request.method == 'DELETE':
-    #         return [IsAdminUser()]
-    #     elif self.request.method == 'POST':
-    #         return [AllowAny()]
-    #     else:
-    #         return [IsStaffOrTargetUser()]
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [permissions.AllowAny()]
+
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.IsAuthenticated()]
+
+        return [IsSameUser()]
 
 
 class TicketViewSet(viewsets.ModelViewSet):
@@ -49,9 +51,17 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         return serializer_class
 
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [IsReporterOrAssignee()]
+        else:
+            return [IsReporter()]
+
     @detail_route(methods=['POST'])
     def mark_done(self, request, pk=None):
         ticket = self.get_object()
+        if ticket.is_done:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         ticket.is_done = True
         ticket.done_date = datetime.now()
         ticket.save()
