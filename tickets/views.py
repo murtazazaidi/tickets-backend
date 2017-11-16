@@ -1,9 +1,12 @@
 from datetime import datetime
+
 from django.contrib.auth.models import User
-from project.tickets.models import Ticket
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
+
+from project.tickets.models import Ticket
 from project.tickets.serializers import CreateUserSerializer, UserSerializer, TicketSerializer, CreateTicketSerializer
 
 
@@ -17,7 +20,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer_class = self.serializer_class
 
-        if self.request.method == 'POST':
+        if self.request.method in ['POST', 'PUT']:
             serializer_class = CreateUserSerializer
 
         return serializer_class
@@ -42,7 +45,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer_class = self.serializer_class
 
         if self.request.method == 'POST':
-            serializer_class = CreateTicketSerializer
+            return CreateTicketSerializer
 
         return serializer_class
 

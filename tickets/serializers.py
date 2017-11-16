@@ -10,6 +10,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         model = User
         fields = ('url', 'id', 'first_name', 'last_name', 'email', 'username', 'assigned', 'reported')
 
+
 class CreateUserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
@@ -24,12 +25,25 @@ class CreateUserSerializer(serializers.HyperlinkedModelSerializer):
         user.save()
         return user
 
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.username = validated_data.get('username', instance.username)
+        password = validated_data.get('password', None)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
+
+
 class TicketSerializer(serializers.HyperlinkedModelSerializer):
     reporter = serializers.ReadOnlyField(source='reporter.username')
     assignee = serializers.ReadOnlyField(source='assignee.username')
     class Meta:
         model = Ticket
         fields = '__all__'
+
 
 class CreateTicketSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
