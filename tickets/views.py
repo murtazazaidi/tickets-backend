@@ -1,6 +1,9 @@
+from datetime import datetime
 from django.contrib.auth.models import User
 from project.tickets.models import Ticket
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.decorators import detail_route
 from project.tickets.serializers import CreateUserSerializer, UserSerializer, TicketSerializer, CreateTicketSerializer
 
 
@@ -42,3 +45,11 @@ class TicketViewSet(viewsets.ModelViewSet):
             serializer_class = CreateTicketSerializer
 
         return serializer_class
+
+    @detail_route(methods=['POST'])
+    def mark_done(self, request, pk=None):
+        ticket = self.get_object()
+        ticket.is_done = True
+        ticket.done_date = datetime.now()
+        ticket.save()
+        return Response(status=status.HTTP_200_OK)
