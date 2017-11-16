@@ -24,10 +24,21 @@ class CreateUserSerializer(serializers.HyperlinkedModelSerializer):
         user.save()
         return user
 
-
-class TicketSerializer(serializers.ModelSerializer):
-    assignee = serializers.ReadOnlyField(source='assignee.username')
+class TicketSerializer(serializers.HyperlinkedModelSerializer):
     reporter = serializers.ReadOnlyField(source='reporter.username')
+    assignee = serializers.ReadOnlyField(source='assignee.username')
     class Meta:
         model = Ticket
         fields = '__all__'
+
+class CreateTicketSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ('severity', 'description', 'penalty', 'assignee')
+
+    def create(self, validated_data):
+        reporter = self.context['request'].user
+        validated_data['reporter'] = reporter
+        ticket = Ticket.objects.create(**validated_data)
+        ticket.save()
+        return ticket
