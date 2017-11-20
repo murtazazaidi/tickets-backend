@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from project.tickets.models import Ticket
-from rest_framework import serializers
+from rest_framework import serializers, status
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -50,9 +50,18 @@ class CreateTicketSerializer(serializers.HyperlinkedModelSerializer):
         model = Ticket
         fields = ('severity', 'description', 'penalty', 'assignee')
 
-    def create(self, validated_data):
+    def validate(self, data):
+        """
+        Check that assignee is not reporter
+        """
         reporter = self.context['request'].user
-        validated_data['reporter'] = reporter
+        if reporter == data.get('assignee', None):
+            raise serializers.ValidationError("Reporter cannot be the assignee")
+
+        data['reporter'] = reporter
+        return data
+
+    def create(self, validated_data):
         ticket = Ticket.objects.create(**validated_data)
         ticket.save()
         return ticket

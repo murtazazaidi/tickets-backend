@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.contrib.auth.models import User
 
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status, permissions, serializers
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
@@ -52,17 +52,31 @@ class TicketViewSet(viewsets.ModelViewSet):
         return serializer_class
 
     def get_permissions(self):
+        if self.request.method == 'POST':
+            return [permissions.IsAuthenticated()]
+
         if self.request.method in permissions.SAFE_METHODS:
             return [IsReporterOrAssignee()]
-        else:
-            return [IsReporter()]
+
+        return [IsReporter()]
 
     @detail_route(methods=['POST'])
     def mark_done(self, request, pk=None):
         ticket = self.get_object()
         if ticket.is_done:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            raise serializers.ValidationError('Ticket is already marked done.')
+
         ticket.is_done = True
         ticket.done_date = datetime.now()
+        ticket.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @detail_route(methods=['POST'])
+    def mark_undone(self, request, pk=None):
+        ticket = self.get_object()
+        if not ticket.is_done:
+            raise serializers.ValidationError('Ticket is not marked done.')
+
+        ticket.is_done = False
         ticket.save()
         return Response(status=status.HTTP_200_OK)
