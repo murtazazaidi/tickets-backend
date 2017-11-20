@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from project.tickets.models import Ticket
 from rest_framework import serializers, status
+from rest_framework_jwt.settings import api_settings
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -12,12 +13,22 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CreateUserSerializer(serializers.HyperlinkedModelSerializer):
+    token = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('url', 'id', 'first_name', 'last_name', 'email', 'username', 'password')
+        fields = ('url', 'id', 'first_name', 'last_name', 'email', 'username', 'token', 'password')
         extra_kwargs = {
             'password': {'write_only': True}
         }
+
+    def get_token(self, user):
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
+        return token
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)

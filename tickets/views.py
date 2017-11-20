@@ -21,7 +21,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer_class = self.serializer_class
 
-        if self.request.method in permissions.SAFE_METHODS:
+        if self.request.method not in permissions.SAFE_METHODS:
             serializer_class = CreateUserSerializer
 
         return serializer_class
