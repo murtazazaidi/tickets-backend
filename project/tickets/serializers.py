@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.contrib.auth.models import User
 from project.tickets.models import Ticket
 from rest_framework import serializers, status
@@ -5,17 +6,21 @@ from rest_framework_jwt.settings import api_settings
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    """ User Serializer Class """
     assigned = serializers.PrimaryKeyRelatedField(many=True, queryset=Ticket.objects.all())
     reported = serializers.PrimaryKeyRelatedField(many=True, queryset=Ticket.objects.all())
     class Meta:
+        """ Meta Class """
         model = User
         fields = ('url', 'id', 'first_name', 'last_name', 'email', 'username', 'assigned', 'reported')
 
 
 class CreateUserSerializer(serializers.HyperlinkedModelSerializer):
+    """ CreateUser Serializer Class """
     token = serializers.SerializerMethodField()
 
     class Meta:
+        """ Meta Class """
         model = User
         fields = ('url', 'id', 'first_name', 'last_name', 'email', 'username', 'token', 'password')
         extra_kwargs = {
@@ -23,6 +28,7 @@ class CreateUserSerializer(serializers.HyperlinkedModelSerializer):
         }
 
     def get_token(self, user):
+        """ Serializer Method for token """
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
@@ -30,17 +36,13 @@ class CreateUserSerializer(serializers.HyperlinkedModelSerializer):
         token = jwt_encode_handler(payload)
         return token
 
-    def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        user.set_password(user.password)
-        user.save()
-        return user
-
     def update(self, instance, validated_data):
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.email = validated_data.get('email', instance.email)
-        instance.username = validated_data.get('username', instance.username)
+        """ Update Method for User """
+        # Fields allowed to be updated
+        whitelisted_keys = ['first_name', 'last_name', 'email', 'username']
+        for key in whitelisted_keys:
+            instance[key] = validated_data.get(key, instance[key])
+
         password = validated_data.get('password', None)
         if password:
             instance.set_password(password)
@@ -49,15 +51,19 @@ class CreateUserSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TicketSerializer(serializers.HyperlinkedModelSerializer):
+    """ Ticket Serializer Class """
     reporter = serializers.ReadOnlyField(source='reporter.username')
     assignee = serializers.ReadOnlyField(source='assignee.username')
     class Meta:
+        """ Meta Class """
         model = Ticket
         fields = '__all__'
 
 
 class CreateTicketSerializer(serializers.HyperlinkedModelSerializer):
+    """ CreateTicket Serializer Class """
     class Meta:
+        """ Meta Class """
         model = Ticket
         fields = ('severity', 'description', 'penalty', 'assignee')
 
@@ -71,8 +77,3 @@ class CreateTicketSerializer(serializers.HyperlinkedModelSerializer):
 
         data['reporter'] = reporter
         return data
-
-    def create(self, validated_data):
-        ticket = Ticket.objects.create(**validated_data)
-        ticket.save()
-        return ticket

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
 
 from django.contrib.auth.models import User
@@ -60,7 +61,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         return [IsReporter()]
 
-    @detail_route(methods=['POST'])
+    @detail_route(methods=['PUT'])
     def mark_done(self, request, pk=None):
         ticket = self.get_object()
         if ticket.is_done:
@@ -71,7 +72,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         ticket.save()
         return Response(status=status.HTTP_200_OK)
 
-    @detail_route(methods=['POST'])
+    @detail_route(methods=['PUT'])
     def mark_undone(self, request, pk=None):
         ticket = self.get_object()
         if not ticket.is_done:
