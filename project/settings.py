@@ -174,3 +174,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = './static'
+
+# Use Gunicorn as WSGI HTTP server
+# ------------------------------------------------------------------------------
+# http://gunicorn.org/
+
+INSTALLED_APPS += ('gunicorn', )
