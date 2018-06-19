@@ -10,7 +10,7 @@ git clone https://github.com/murtazazaidi/tickets-backend.git
 cd tickets-backend
 
 echo "SECRET_KEY=some_secret_key" > .env
-echo "DEBUG=True" > .env
+echo "DEBUG=True" >> .env
 echo "ALLOWED_HOSTS=localhost, 127.0.0.1, 0.0.0.0" >> .env
 
 echo "POSTGRES_PASSWORD=[postgres_password]" >> .env
