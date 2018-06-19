@@ -11,13 +11,13 @@ cd tickets-backend
 
 echo "SECRET_KEY=some_secret_key" > .env
 echo "DEBUG=True" > .env
-echo "ALLOWED_HOSTS=localhost, 127.0.0.1, 0.0.0.0" > .env
+echo "ALLOWED_HOSTS=localhost, 127.0.0.1, 0.0.0.0" >> .env
 
-echo "POSTGRES_PASSWORD=[postgres_password]" > .env
-echo "POSTGRES_USER=[postgres_user]" > .env
-echo "POSTGRES_DB=tickets" > .env
+echo "POSTGRES_PASSWORD=[postgres_password]" >> .env
+echo "POSTGRES_USER=[postgres_user]" >> .env
+echo "POSTGRES_DB=tickets" >> .env
 
-echo "DATABASE_URL=postgres://[postgres_user]:[postgres_password]@localhost:5432/tickets" > .env
+echo "DATABASE_URL=postgres://[postgres_user]:[postgres_password]@localhost:5432/tickets" >> .env
 ```
 
 ## To Run Locally
